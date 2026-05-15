@@ -63,7 +63,8 @@ button:hover {
 
 .container {
   padding: 1rem;
-  width: stretch;
+  width: -webkit-fill-available;
+  width: 100%;
   height: auto;
   background: #515da2;
   opacity: 0.8;
