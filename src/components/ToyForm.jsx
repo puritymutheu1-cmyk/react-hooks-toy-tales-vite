@@ -1,3 +1,6 @@
+import React, { useState } from "react";
+
+
 function ToyForm({ onAddToy }) {
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
@@ -28,3 +31,4 @@ function ToyForm({ onAddToy }) {
     </div>
   );
 }
+export default ToyForm;
