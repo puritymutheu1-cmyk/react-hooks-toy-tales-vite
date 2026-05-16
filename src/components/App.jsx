@@ -1,69 +1,45 @@
 
-import React, { useState, useEffect } from "react";
-import Header from "./Header";
-import ToyForm from "./ToyForm";
-import ToyContainer from "./ToyContainer";
-
-const API_URL = "http://localhost:3001/toys";
-
 function App() {
-  const [showForm, setShowForm] = useState(false);
   const [toys, setToys] = useState([]);
+  const [showForm, setShowForm] = useState(false);
 
-  // Fetch all toys on page load
   useEffect(() => {
-    fetch(API_URL)
-      .then((res) => res.json())
-      .then((data) => setToys(data));
+    fetch("http://localhost:3001/toys")
+      .then(r => r.json())
+      .then(setToys);
   }, []);
 
-  function handleClick() {
-    setShowForm((showForm) => !showForm);
+  function handleDelete(id) {
+    fetch(`http://localhost:3001/toys/${id}`, { method: "DELETE" })
+      .then(() => setToys(toys => toys.filter(t => t.id !== id)));
   }
 
-  // POST - Add new toy
-  function handleAddToy(newToy) {
-    fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...newToy, likes: 0 }),
-    })
-      .then((res) => res.json())
-      .then((addedToy) => setToys((prev) => [...prev, addedToy]));
-  }
-
-  // DELETE - Donate a toy
-  function handleDonate(id) {
-    fetch(`${API_URL}/${id}`, { method: "DELETE" }).then(() =>
-      setToys((prev) => prev.filter((toy) => toy.id !== id))
-    );
-  }
-
-  // PATCH - Like a toy
   function handleLike(toy) {
-    fetch(`${API_URL}/${toy.id}`, {
+    fetch(`http://localhost:3001/toys/${toy.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ likes: toy.likes + 1 }),
     })
-      .then((res) => res.json())
-      .then((updatedToy) =>
-        setToys((prev) =>
-          prev.map((t) => (t.id === updatedToy.id ? updatedToy : t))
-        )
-      );
+      .then(r => r.json())
+      .then(updated => setToys(toys => toys.map(t => t.id === updated.id ? updated : t)));
+  }
+
+  function handleAddToy(newToy) {
+    setToys(toys => [...toys, newToy]);
   }
 
   return (
-    <>
-      <Header />
-      {showForm ? <ToyForm onAddToy={handleAddToy} /> : null}
+    <div>
+      {/* header */}
       <div className="buttonContainer">
-        <button onClick={handleClick}>Add a Toy</button>
+        <button onClick={() => setShowForm(s => !s)}>Add a Toy</button>
       </div>
-      <ToyContainer toys={toys} onDonate={handleDonate} onLike={handleLike} />
-    </>
+      {showForm && <ToyForm onAddToy={handleAddToy} />}
+      <div id="toy-collection">
+        {toys.map(toy => (
+          <ToyCard key={toy.id} toy={toy} onDelete={handleDelete} onLike={handleLike} />
+        ))}
+      </div>
+    </div>
   );
 }
-
-export default App;
